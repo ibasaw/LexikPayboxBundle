@@ -131,9 +131,7 @@ class Response
         $this->initData();
         $this->initSignature();
 
-        $file = fopen(dirname(__FILE__) . '/../../../Resources/config/paybox_public_key.pem', 'r');
-        $cert = fread($file, 8192);
-        fclose($file);
+        $cert = file_get_contents($this->parameters['public_key']);
 
         $publicKey = openssl_pkey_get_public($cert);
         
