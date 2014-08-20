@@ -89,11 +89,11 @@ class Response
 
             switch (strlen($signature)) {
                 case 172 :
-                    $this->signature = base64_decode($signature);
+                    $this->signature = base64_decode(urldecode($signature));
                     break;
 
                 case 128 :
-                    $this->signature = $signature;
+                    $this->signature = urldecode($signature);
                     break;
 
                 default :
@@ -134,16 +134,8 @@ class Response
         $cert = file_get_contents($this->parameters['public_key']);
 
         $publicKey = openssl_pkey_get_public($cert);
-        
-        $first = strpos ( $_SERVER ['REQUEST_URI'], '?' );
-        $qrystr = substr ( $_SERVER ['REQUEST_URI'], $first + 1 );
-        $pos = strrpos ( $qrystr, '&' );
-        $data = substr ( $qrystr, 0, $pos );
-        $pos = strpos ( $qrystr, '=', $pos ) + 1;
-        $this->signature = substr ( $qrystr, $pos );
-        $this->signature = base64_decode ( urldecode ( $this->signature ) );
                 
-        $result = openssl_verify ( $data, $this->signature, $publicKey );
+        $result = openssl_verify ( Paybox::stringify($this->data), $this->signature, $publicKey );
 
         $this->logger->info(Paybox::stringify($this->data));
         $this->logger->info(base64_encode($this->signature));
