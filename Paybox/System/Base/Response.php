@@ -86,23 +86,24 @@ class Response
     {
         if ($this->getRequestParameters()->has($this->parameters['hmac']['signature_name'])) {
             $signature = $this->getRequestParameters()->get($this->parameters['hmac']['signature_name']);
-
+			
             switch (strlen($signature)) {
                 case 172 :
-                    $this->signature = base64_decode(urldecode($signature));
+                    $this->signature = base64_decode($signature);
                     break;
 
                 case 128 :
-                    $this->signature = urldecode($signature);
+                    $this->signature = $signature;
                     break;
 
                 default :
                     $this->logger->err('Bad signature format.');
                     break;
             }
+			
         } else {
             $this->logger->err('Payment signature not set.');
-        }
+        }		
     }
 
     /**
@@ -112,7 +113,7 @@ class Response
     {
         foreach ($this->getRequestParameters() as $key => $value) {
             $this->logger->info(sprintf('%s=%s', $key, $value));
-
+			
             if ($this->parameters['hmac']['signature_name'] !== $key) {
                 $this->data[$key] = urlencode($value);
             }
@@ -131,11 +132,11 @@ class Response
         $this->initData();
         $this->initSignature();
 
-        $cert = file_get_contents($this->parameters['public_key']);
+        $cert = file_get_contents($this->parameters['public_key']);		
 
         $publicKey = openssl_pkey_get_public($cert);
-                
-        $result = openssl_verify ( Paybox::stringify($this->data), $this->signature, $publicKey );
+		
+        $result = openssl_verify ( Paybox::stringify($this->data), $this->signature, $publicKey );		
 
         $this->logger->info(Paybox::stringify($this->data));
         $this->logger->info(base64_encode($this->signature));
